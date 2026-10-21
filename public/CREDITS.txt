@@ -1,0 +1,31 @@
+CREDITS
+=======
+
+This game is a web edition built on top of the open-source project
+"Ancient Empires Reloaded" (aeii) by toyknight and contributors
+(http://toyknight.net/aeii).
+
+  · Game rules, unit/tile/ability data and campaign maps are derived from the aeii
+    project (GNU General Public License v3 — see LICENSE.txt).
+  · The original art and music are used under the aeii project's terms: "You can use
+    the assets of this game without any permission or restriction."
+
+Added in this edition (also released under the GNU GPL v3):
+
+  · The Frontier mode, Battle Royale mode, movement profiles, fog of war, economy and
+    all of their units, buildings, bots and rules.
+  · Procedurally painted pixel art for the new units, buildings and objects.
+  · The HTML5 / canvas client, the deterministic engine core and the multiplayer
+    referee server.
+
+Typeface
+  · Jersey 15 — Copyright 2023 The Soft Type Project Authors
+    (https://github.com/scfried/soft-type-jersey), SIL Open Font License 1.1
+    (see /assets/fonts/OFL-Jersey15.txt).
+
+"Ancient Empires" is a trademark of its original publisher; this game is not affiliated with
+or endorsed by it. Thornmarch is the name of this web edition (set in public/js/config/brand.js).
+
+SOURCE CODE
+  The complete corresponding source code of this program is available from the site
+  that serves it (see the About box), as required by the GNU GPL v3.

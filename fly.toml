@@ -1,0 +1,33 @@
+# Fly.io config for the Thornmarch server (client + online play in one app). One-time setup, from this folder:
+#   flyctl auth login                 (opens a browser; Fly asks for a payment card on new accounts)
+#   npm run deploy:server             (builds and deploys; the first run creates the app)
+# A tiny machine that stops when nobody is connected and starts on the next visit keeps the bill near zero.
+app = "thornmarch-game"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "3080"
+  HOST = "0.0.0.0"
+  STATIC_DIR = "/app/dist"
+  TRUST_PROXY = "1"
+
+[http_service]
+  internal_port = 3080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/healthz"
+    interval = "30s"
+    timeout = "3s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

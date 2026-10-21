@@ -1,0 +1,31 @@
+{
+  "name": "thornmarch",
+  "version": "2.1.0",
+  "description": "Thornmarch — a turn-based tactics game for the browser: campaign, skirmish, the Frontier realm and a 60-warband Battle Royale",
+  "type": "module",
+  "private": true,
+  "license": "GPL-3.0-only",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server/server.mjs",
+    "start:prod": "node scripts/build.mjs && STATIC_DIR=dist node server/server.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check-release.mjs",
+    "verify": "node scripts/test-headless.mjs 14 && node scripts/test-server.mjs && node scripts/build.mjs && node scripts/check-release.mjs",
+    "test": "node scripts/test-headless.mjs 14",
+    "test:server": "node scripts/test-server.mjs",
+    "test:online": "node scripts/test-online-royale.mjs",
+    "autotile": "node scripts/analyze-autotile.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "share-image": "node scripts/make-share-image.mjs",
+    "preview:art": "node scripts/preview-art.mjs ./.preview",
+    "preview:map": "node scripts/preview-map.mjs ./.preview 64 2 demo",
+    "audit:movement": "node scripts/audit-movement.mjs",
+    "sim:royale": "node scripts/sim-royale.mjs 60",
+    "tune:royale": "node scripts/tune-royale.mjs",
+    "preview:royale": "node scripts/preview-royale.mjs ./.preview 60 demo",
+    "deploy:server": "flyctl deploy --build-arg SITE_URL=https://thornmarch.netlify.app --build-arg SOURCE_URL=https://github.com/headebeast/thornmarch --remote-only"
+  }
+}

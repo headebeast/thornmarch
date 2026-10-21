@@ -1,0 +1,19 @@
+{
+  "name": "Thornmarch Tactics",
+  "short_name": "Thornmarch",
+  "description": "Classic turn-based tactics rebuilt for every screen — with the new Frontier mode.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#070a12",
+  "theme_color": "#070a12",
+  "categories": ["games"],
+  "icons": [
+    { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

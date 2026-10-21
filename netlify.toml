@@ -1,0 +1,9 @@
+# Static hosting on Netlify: single-player modes work as-is; for online play host the Node server elsewhere and set SERVER_URL.
+#   Build settings → Build command: npm run build   Publish directory: dist
+# Environment variables (Site settings → Environment): SITE_URL, SOURCE_URL, SERVER_URL (optional), ONLINE=off (if no server)
+[build]
+  command = "node scripts/build.mjs"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"

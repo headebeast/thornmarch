@@ -1,0 +1,147 @@
+[
+  {
+    "id": 0,
+    "name": "Conqueror",
+    "description": "Units with this ability can capture villages."
+  },
+  {
+    "id": 1,
+    "name": "Fighter of the Water",
+    "description": "Units with this ability gain 10 attack/defence bonus when in water."
+  },
+  {
+    "id": 2,
+    "name": "Fighter of the Forest",
+    "description": "Units with this ability gain 10 attack/defence bonus when in forest."
+  },
+  {
+    "id": 3,
+    "name": "Fighter of the Mountain",
+    "description": "Units with this ability gain 10 attack/defence bonus when in mountain."
+  },
+  {
+    "id": 4,
+    "name": "Destroyer",
+    "description": "Units with this ability can destroy villages."
+  },
+  {
+    "id": 5,
+    "name": "Air Force",
+    "description": "Units with this ability can move through all terrains using 1 movement point, and can move through ground enemy units. But they will not receive defence bonuses from terrains."
+  },
+  {
+    "id": 6,
+    "name": "Necromancer",
+    "description": "Necromancers can summon skeletons from fallen units, at the same time they will not be [Poisoned] if they standby on tombstones."
+  },
+  {
+    "id": 7,
+    "name": "Healer",
+    "description": "Units with this ability can heal allies, and the healing amount will increase when leveling up. Note that healer's heal can exceed target's HP cap once."
+  },
+  {
+    "id": 8,
+    "name": "Charger",
+    "description": "For units who have this ability, once they finished their actions they can use their remaining movement points to move again."
+  },
+  {
+    "id": 9,
+    "name": "Poisoner",
+    "description": "For units who have this ability, their attacks will attach [Poisoned] status to enemies for 2 turns. However units with this ability will not affect each other."
+  },
+  {
+    "id": 10,
+    "name": "Repairer",
+    "description": "Units with this ability can repair ruined villages."
+  },
+  {
+    "id": 11,
+    "name": "Undead",
+    "description": "For units who have this ability, tombstones will not appear on the map when they die. Moreover, when they are [Poisoned] they can still receive heals from terrains and the poison damages will become heals. However heals from allies will become damages to them."
+  },
+  {
+    "id": 12,
+    "name": "Marksman",
+    "description": "For units who have this ability, they gain 15 attack bonus when attacking enemies with ability [Air Force]."
+  },
+  {
+    "id": 13,
+    "name": "Son of the Water",
+    "description": "Units with this ability can move through water terrains using 1 movement point, and when they are on water they gain 10 health recovery at turn start."
+  },
+  {
+    "id": 14,
+    "name": "Son of the Forest",
+    "description": "Units with this ability can move through forest terrains using 1 movement point, and when they are in forest they gain 10 health recovery at turn start."
+  },
+  {
+    "id": 15,
+    "name": "Son of the Mountain",
+    "description": "Units with this ability can move through mountain terrains using 1 movement point, and when they are in mountain they gain 10 health recovery at turn start."
+  },
+  {
+    "id": 16,
+    "name": "Fleet-footed",
+    "description": "Units with this ability can move through land terrains using 1 movement point."
+  },
+  {
+    "id": 17,
+    "name": "Slowing Aura",
+    "description": "For units who have this ability, when they standby they will attach [Slowed] status to enemies within 2 blocks for 1 turn. However units with this ability will not affect each other."
+  },
+  {
+    "id": 18,
+    "name": "Commander",
+    "description": "Units with this ability can capture castles."
+  },
+  {
+    "id": 19,
+    "name": "Heavy Machine",
+    "description": "Units with this ability cannot take action when moved and status cannot be attached to them."
+  },
+  {
+    "id": 20,
+    "name": "Attack Aura",
+    "description": "For units who have this ability, when they standby they will attach [Inspired] status to allies within 2 blocks for current turn."
+  },
+  {
+    "id": 21,
+    "name": "Bloodthirsty",
+    "description": "For units who have this ability, each enemy within 2 blocks will give 10 attack bonus and 5 physical defence bonus to them, but they cannot receive heals from terrains."
+  },
+  {
+    "id": 22,
+    "name": "Guardian",
+    "description": "For units who have this ability, when on ally villages or castles, they will gain 5 defence bonus."
+  },
+  {
+    "id": 23,
+    "name": "Refresh Aura",
+    "description": "For units who have this ability, when they standby they will clear debuff of allies within 2 blocks and heal them a bit. The healing amount will increase when leveling up."
+  },
+  {
+    "id": 24,
+    "name": "Lord of Terror",
+    "description": "For units who have this ability, their melee attacks will be 1.5 times stronger."
+  },
+  {
+    "id": 25,
+    "name": "Counter Madness",
+    "description": "For units who have this ability, if the attacker is within 2 blocks away they can perform counter attacks."
+  },
+  {
+    "id": 26,
+    "name": "Blinding Attack",
+    "description": "For units who have this ability, their attacks will attach [Blinded] status to enemies. However units with this ability will not affect each other."
+  },
+  {
+    "id": 27,
+    "name": "Rehabilitation",
+    "description": "Units with this ability will recover 25% max HP at turn start, regardless of being [Poisoned] or not."
+  },
+  {
+    "id": 28,
+    "name": "Absorptive Skin",
+    "description": "For units who have this ability, they receive 50% less damage from ranged attacks."
+  }
+]

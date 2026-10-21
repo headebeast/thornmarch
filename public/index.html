@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#070a12" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Thornmarch Tactics</title>
+  <meta name="description" content="Classic turn-based tactics, rebuilt for every screen — campaign, skirmish, the Frontier realm and a 60-warband Battle Royale." />
+
+  <!-- link previews -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Thornmarch Tactics" />
+  <meta property="og:description" content="Classic turn-based tactics, rebuilt for every screen — campaign, skirmish, the Frontier realm and a 60-warband Battle Royale." />
+  <meta property="og:image" content="/assets/icons/share.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Thornmarch Tactics" />
+  <meta name="twitter:description" content="Classic turn-based tactics, rebuilt for every screen — campaign, skirmish, the Frontier realm and a 60-warband Battle Royale." />
+  <meta name="twitter:image" content="/assets/icons/share.png" />
+
+  <!-- deployment settings (the build script fills these; see js/config/deploy.js and DEPLOY.md) -->
+  <meta name="aeii-version" content="dev" />
+  <meta name="aeii-server" content="" />
+  <meta name="aeii-online" content="on" />
+  <meta name="aeii-source" content="" />
+
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/assets/icons/icon-192.png" />
+  <link rel="preload" href="/assets/fonts/Jersey15.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="stylesheet" href="/css/base.css" />
+  <link rel="stylesheet" href="/css/hud.css" />
+  <link rel="stylesheet" href="/css/menu.css" />
+</head>
+<body>
+  <canvas id="game-canvas" tabindex="0" aria-label="Battlefield"></canvas>
+
+  <div id="loading-overlay">
+    <h2>THORNMARCH TACTICS</h2>
+    <div id="loading-status">Initializing tactical engine…</div>
+    <div class="loading-bar"><div id="loading-bar-fill"></div></div>
+  </div>
+
+  <noscript><p style="padding:2rem;color:#e8ecf5;font-family:sans-serif">This game needs JavaScript enabled.</p></noscript>
+  <!-- plain script: explains old browsers and stalled loads instead of an endless loading bar -->
+  <script src="/js/boot-guard.js"></script>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
