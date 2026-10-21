@@ -51,7 +51,7 @@ const rel = f => path.relative(ROOT, f).replace(/\\/g, '/');
 
 // ---- JS modules ------------------------------------------------------------------------------------------------------
 section('JavaScript modules');
-const jsFiles = walk(path.join(PUBLIC, 'js'), f => f.endsWith('.js'));
+const jsFiles = [...walk(path.join(PUBLIC, 'js'), f => f.endsWith('.js')), ...['analytics', 'server', 'netlify'].flatMap(d => walk(path.join(ROOT, d), f => f.endsWith('.mjs')))];
 const exportsOf = new Map();
 function collectExports(file, seen = new Set()) {
   if (exportsOf.has(file)) return exportsOf.get(file);
@@ -121,10 +121,10 @@ for (const f of walk(path.join(PUBLIC, 'data'), f => f.endsWith('.json')).concat
   }
   ok(good, `${rel(f)} is valid JSON`);
 }
-for (const f of ['LICENSE.txt', 'CREDITS.txt', 'assets/fonts/OFL-Jersey15.txt', 'assets/icons/share.png', 'assets/icons/icon-192.png', 'assets/icons/icon-512.png']) ok(fs.existsSync(path.join(PUBLIC, f)), `public/${f} is present`);
+for (const f of ['privacy.html', 'admin/index.html', 'admin/admin.js', 'admin/admin.css', 'css/doc.css', 'LICENSE.txt', 'CREDITS.txt', 'assets/fonts/OFL-Jersey15.txt', 'assets/icons/share.png', 'assets/icons/icon-192.png', 'assets/icons/icon-512.png']) ok(fs.existsSync(path.join(PUBLIC, f)), `public/${f} is present`);
 ok(/GNU GENERAL PUBLIC LICENSE/.test(read(path.join(PUBLIC, 'LICENSE.txt'))), 'LICENSE.txt is the GPL text');
 const html = read(path.join(PUBLIC, 'index.html'));
-for (const name of ['aeii-version', 'aeii-server', 'aeii-online', 'aeii-source']) ok(html.includes(`name="${name}"`), `index.html carries <meta name="${name}">`);
+for (const name of ['aeii-version', 'aeii-server', 'aeii-online', 'aeii-source', 'aeii-analytics']) ok(html.includes(`name="${name}"`), `index.html carries <meta name="${name}">`);
 ok(html.includes('og:image') && html.includes('boot-guard.js'), 'index.html has link-preview tags and the boot guard');
 
 const { BRAND } = await import(pathToFileURL(path.join(PUBLIC, 'js/config/brand.js')).href);
@@ -146,6 +146,8 @@ else {
   ok(version && version !== 'dev' && sw.includes(version.split('+')[1]), `dist/index.html is stamped (${version}) and matches the service worker`);
   ok(fs.existsSync(path.join(DIST, '_headers')) && fs.existsSync(path.join(DIST, 'robots.txt')), 'dist/ has _headers and robots.txt');
   ok(!/(?:src|href)="\/js\/legacy\.js"/.test(built), 'dist/index.html has no stale script references');
+  const analyticsMeta = /name="aeii-analytics" content="([^"]*)"/.exec(built)?.[1];
+  if (analyticsMeta) ok(sw.includes("startsWith('/api/')") && !list.some(u => u.startsWith('/admin')), 'statistics are on: the service worker leaves /api/ and /admin/ alone and does not pre-cache the dashboard');
 }
 
 console.log(failures ? `\n${failures} problem(s) found` : `\nRelease checks passed ✓ (${checks} checks${warnings ? `, ${warnings} reminder(s)` : ''})`);

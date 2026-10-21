@@ -159,12 +159,19 @@ simulates the match, bots included, identically. A player who disconnects is rep
 Caveat: lockstep trusts clients with the full simulation, so a modified client can peek at fogged state — competitive play would need
 an authoritative server running the (already Node-ready) engine.
 
+### Settings, diagnostics and statistics
+Menu → **Settings** (or the gear in the in-game bar): *Show FPS counter* (frame rate, frame time, slowest recent frame) and *Show connection quality*
+(ping, jitter and packet loss; loss = probe replies that never came back, because browsers hide raw TCP loss). Both draw a small read-out under the
+top bar (`ui/perfOverlay.js`, `platform/perfMonitor.js`, `network/netStats.js`). The same menu holds the privacy choices. Consent-based anonymous usage
+statistics (`analytics/`, `public/js/analytics/`, `netlify/functions/`) feed the password-protected dashboard at `/admin/`; see DEPLOY.md §3c.
+
 ### Tests & tools
 | Command | What it checks |
 |---|---|
 | `npm test` | engine, AIs, Frontier rules, movement profiles, Battle Royale (20/40/60, horns, spoils, forced march, time called, no idle warbands, claims/recruits/forge/academy/shrine, recruit weariness, sealed chests, lockstep with building orders), determinism |
 | `node scripts/test-online-royale.mjs` | the referee protocol against a running server (join, rounds, drop → bot, desync, order sanitising) |
 | `npm run test:server` | server hardening: CSP/headers, gzip/brotli/304/ranges, hostile URLs, origin checks, per-address and flood limits, oversized frames, heartbeat (spawns its own server) |
+| `npm run test:analytics` | usage statistics: validation, privacy rules (IP masking, no names/chat), aggregation, token auth, erase, retention, abuse limits, file store, real HTTP routes |
 | `npm run check` | pre-publish checks: every import resolves and exports what is imported, every asset path exists, JSON/manifest/licence files, build output |
 | `npm run build` | `dist/`: branded index.html + manifest, versioned offline service worker, `_headers`, robots/sitemap, size report |
 | `node scripts/audit-movement.mjs` | unit × terrain movement table |

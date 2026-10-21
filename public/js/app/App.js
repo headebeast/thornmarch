@@ -32,6 +32,13 @@ import { h, show } from '../ui/dom.js';
 import { glyph } from '../ui/icons.js';
 import { deploy } from '../config/deploy.js';
 import { AboutBox } from '../ui/about.js';
+import { SettingsBox } from '../ui/settings.js';
+import { PerfOverlay } from '../ui/perfOverlay.js';
+import { PerfMonitor } from '../platform/perfMonitor.js';
+import { settings } from '../config/settings.js';
+import { Tracker } from '../analytics/tracker.js';
+import { consent } from '../analytics/consent.js';
+import { ConsentBanner } from '../ui/consentBanner.js';
 
 const TARGETING = ['ATTACK', 'SUMMON', 'HEAL', 'CUSTOM'];
 
@@ -61,6 +68,9 @@ export class App {
     );
     this.editor = new MapEditor(this.assets);
     this.net = new MultiplayerClient(ev => this.onNet(ev));
+    this.perf = new PerfMonitor();
+    this.tracker = new Tracker({ perf: this.perf, getNet: () => this.net.stats, isOnline: () => this.net.connected });
+    this.lastResult = null; // how the current match ended, for the usage statistics
 
     this.match = null;
     this.ai = null;
@@ -104,6 +114,8 @@ export class App {
     this.buildUi();
     this.bindInput();
     this.bindWindow();
+    this.tracker.init();
+    this.consentBanner = this.tracker.available ? new ConsentBanner({ onChoose: state => consent.set(state) }) : null;
     this.showMenu();
     document.getElementById('loading-overlay').classList.add('hidden');
     this.running = true;
@@ -158,6 +170,12 @@ export class App {
       onStartMatch: () => this.net.startMatch()
     });
 
+    this.settingsBox = new SettingsBox({ onErase: () => this.tracker.forget() });
+    this.perfOverlay = new PerfOverlay({ perf: this.perf, getNet: () => this.net.stats, isOnline: () => this.net.connected, anchor: () => this.hud.el.top });
+    const applySettings = () => this.perfOverlay.configure({ showFps: settings.get('showFps'), showNet: settings.get('showNet') });
+    settings.subscribe(applySettings);
+    applySettings();
+
     this.victory = new Modal({ title: 'Battle over', width: 460, dismissable: false });
     this.victoryTitle = h('h2', null, '');
     this.victorySub = h('p', { style: { color: 'var(--text-dim)' } }, '');
@@ -180,6 +198,7 @@ export class App {
     else if (id === 'fullscreen') this.onCommand('fullscreen');
     else if (id === 'audio') this.onCommand('audio');
     else if (id === 'about') (this.about ??= new AboutBox()).open();
+    else if (id === 'settings') this.settingsBox.open();
   }
 
   openSetup(modeId) {
@@ -202,6 +221,10 @@ export class App {
     this.editor.active = false;
     this.editorPanel.show(false);
     this.match = match;
+    this.lastResult = null;
+    this.consentBanner?.hide();
+    this.tracker.screen(`play:${match.modeId}`);
+    this.tracker.playStart(match.modeId, { players: String(match.mapData?.activeTeams?.length ?? ''), online: String(!!match.online) });
     this.themeId = match.view?.theme || 'frost';
     this.lastTurnTeam = null;
     this.previewTouch = null;
@@ -272,6 +295,11 @@ export class App {
     m.open();
   }
 
+  /** How the running match ended — reported to the usage statistics when the player leaves it. */
+  noteResult(result, { rounds = 0, place = null } = {}) {
+    this.lastResult = { result, rounds, place };
+  }
+
   /** Leave whatever is running (and any online room) and return to the main menu. */
   leaveToMenu() {
     if (this.net.currentRoom) this.net.leaveRoom();
@@ -279,6 +307,9 @@ export class App {
   }
 
   showMenu() {
+    if (this.match) this.tracker.playEnd(this.lastResult?.result ?? 'quit', this.lastResult ?? {});
+    this.tracker.screen('menu');
+    if (consent.needsAsk) this.consentBanner?.show();
     this.royale?.destroy();
     this.royale = null;
     this.game.reset();
@@ -302,6 +333,8 @@ export class App {
   // Editor
   // ---------------------------------------------------------------------------------------------
   startEditor() {
+    this.consentBanner?.hide();
+    this.tracker.screen('editor');
     this.menu.show(false);
     this.backdrop.stop();
     this.themeId = 'frost';
@@ -336,6 +369,8 @@ export class App {
   // ---------------------------------------------------------------------------------------------
   frame(now) {
     if (!this.running) return;
+    this.perf.tick(now);
+    this.perfOverlay.tick(now);
     this.camera.update(now);
     this.applyKeyboardPan(now);
     if (this.editor.active) this.renderer.render(null, this.editor);
@@ -505,6 +540,7 @@ export class App {
         return;
       }
       case 'codex': return this.codex.open();
+      case 'settings': return this.settingsBox.open();
       case 'menu': return this.confirmLeave();
       case 'endTurn': {
         if (this.royale) return this.royale.lock();
@@ -822,6 +858,7 @@ export class App {
     const g = this.game;
     const w = TEAMS[g.winnerTeam] || TEAMS[0];
     const renown = g.renown && g.renownGoal && g.renown[g.winnerTeam] >= g.renownGoal;
+    this.noteResult(this.match?.playerConfig?.[g.winnerTeam] === PLAYER_TYPES.LOCAL ? 'won' : 'lost', { rounds: g.turnNumber });
     this.victory.title.textContent = renown ? 'Renown victory' : 'Victory';
     this.victoryTitle.textContent = `${w.name} ARMY WINS`;
     this.victoryTitle.style.color = w.light;

@@ -4,6 +4,7 @@
 
 import { platform } from '../platform/platform.js';
 import { deploy } from '../config/deploy.js';
+import { NetStats } from './netStats.js';
 
 const MAX_RETRIES = 6;
 
@@ -20,6 +21,9 @@ export class MultiplayerClient {
     this.wantOpen = false; // the player is using online features: keep the line open
     this.retries = 0;
     this.retryTimer = null;
+    this.stats = new NetStats(); // ping / jitter / probe loss, shown by the FPS & connection overlay
+    this.probeTimer = null;
+    this.probeId = 0;
   }
 
   connect() {
@@ -38,6 +42,7 @@ export class MultiplayerClient {
     this.ws.onopen = () => {
       this.connected = true;
       this.retries = 0;
+      this.startProbes();
       this.send({ type: 'HELLO', username: this.username });
       for (const m of this.queue.splice(0)) this.send(m);
       this.onEvent({ type: 'CONNECTED' });
@@ -50,6 +55,7 @@ export class MultiplayerClient {
       } catch (err) {
         return console.error('WS parse error', err);
       }
+      if (msg.type === 'PONG') return void this.stats.received(msg.id, performance.now()); // internal: never reaches the game
       if (msg.type === 'WELCOME') this.playerId = msg.playerId;
       else if (msg.type === 'ROOM_JOINED' || msg.type === 'ROOM_UPDATED') {
         this.currentRoom = msg.room;
@@ -64,6 +70,7 @@ export class MultiplayerClient {
 
     this.ws.onclose = () => {
       const inMatch = !!this.currentRoom?.started;
+      this.stopProbes();
       this.connected = false;
       this.currentRoom = null;
       this.assignedTeam = null;
@@ -76,6 +83,25 @@ export class MultiplayerClient {
         this.retryTimer = setTimeout(() => this.connect(), delay);
       }
     };
+  }
+
+  /** A tiny PING every two seconds; the server's PONG gives round-trip time, and silence counts as loss. */
+  startProbes() {
+    this.stopProbes();
+    this.probeTimer = setInterval(() => {
+      if (this.ws?.readyState !== WebSocket.OPEN) return;
+      const now = performance.now();
+      this.stats.sweep(now);
+      const id = ++this.probeId;
+      this.stats.sent(id, now);
+      this.ws.send(JSON.stringify({ type: 'PING', id }));
+    }, 2000);
+  }
+
+  stopProbes() {
+    clearInterval(this.probeTimer);
+    this.probeTimer = null;
+    this.stats.reset();
   }
 
   /** The player is done with online features: close the line and stop retrying. */

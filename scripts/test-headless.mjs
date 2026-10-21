@@ -539,6 +539,43 @@ async function royaleSection(db) {
 (async () => {
   const db = loadDatabase();
 
+  section('Diagnostics (FPS, ping, jitter, loss)');
+  {
+    const { NetStats } = await import('../public/js/network/netStats.js');
+    const { PerfMonitor } = await import('../public/js/platform/perfMonitor.js');
+    const ns = new NetStats({ keep: 10, timeoutMs: 3000 });
+    check(ns.snapshot(0).quality === 'none' && ns.snapshot(0).ping === null, 'no probes yet: quality "none"');
+    // five answered probes with RTTs 40, 50, 40, 50, 40
+    [40, 50, 40, 50, 40].forEach((rtt, i) => { ns.sent(i, i * 2000); ns.received(i, i * 2000 + rtt); });
+    let s = ns.snapshot(9000);
+    check(Math.abs(s.ping - 44) < 1e-9 && Math.abs(s.jitter - 10) < 1e-9 && s.loss === 0 && s.quality === 'good', `ping ${s.ping}, jitter ${s.jitter}, loss ${s.loss}% → good`);
+    // two probes never answered
+    ns.sent(100, 10000); ns.sent(101, 12000);
+    ns.sweep(13000);
+    check(ns.snapshot(13000).loss === 0, 'a probe still inside its timeout is not lost yet');
+    ns.sweep(16000);
+    s = ns.snapshot(16000);
+    check(Math.abs(s.loss - (2 / 7) * 100) < 1e-9, `two silent probes out of seven → ${s.loss.toFixed(1)}% loss`);
+    check(s.quality === 'poor' && s.silent, 'high loss and a long silence read as "poor"');
+    check(ns.received(100, 17000) === null, 'a late answer for a written-off probe is ignored');
+    ns.reset();
+    check(ns.snapshot(0).samples === 0, 'reset clears the history');
+    check(NetStats.quality(60, 0) === 'good' && NetStats.quality(150, 0) === 'fair' && NetStats.quality(60, 2) === 'fair' && NetStats.quality(300, 0) === 'poor', 'quality bands: good < 100 ms & < 1% · fair · poor ≥ 250 ms or ≥ 5%');
+    const win = new NetStats({ keep: 5 });
+    for (let i = 0; i < 20; i++) { win.sent(i, i); win.received(i, i + 10); }
+    check(win.history.length === 5 && win.rtts.length === 5, 'only the most recent probes count');
+
+    const pm = new PerfMonitor(500);
+    for (let t = 1000; t <= 3000; t += 1000 / 60) pm.tick(t);
+    check(Math.abs(pm.fps - 60) < 2 && Math.abs(pm.frameMs - 16.7) < 1, `a steady 60 Hz reads ${pm.fps.toFixed(1)} FPS / ${pm.frameMs.toFixed(1)} ms`);
+    for (let t = 3000; t <= 5000; t += 1000 / 30) pm.tick(t);
+    check(Math.abs(pm.fps - 30) < 2, `dropping to 30 Hz reads ${pm.fps.toFixed(1)} FPS`);
+    pm.tick(5000 + 8000); // the tab was in the background for 8 s
+    check(pm.fps > 20, 'a long background gap is not counted as a slow frame');
+    const d = pm.drain();
+    check(d && d.avg > 20 && d.min <= d.avg && pm.drain() === null, 'drain() returns the average and minimum once, then starts afresh');
+  }
+
   section('Content pack');
   check(db.units.length === 29, `expected 29 units, got ${db.units.length}`);
   check(db.abilities.length === 36, `expected 36 abilities, got ${db.abilities.length}`);

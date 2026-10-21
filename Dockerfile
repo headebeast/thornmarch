@@ -15,6 +15,8 @@ WORKDIR /app
 ENV NODE_ENV=production PORT=3080 HOST=0.0.0.0 STATIC_DIR=/app/dist TRUST_PROXY=1
 COPY --from=build /app/dist ./dist
 COPY server ./server
+COPY analytics ./analytics
+COPY public/js/config/brand.js ./public/js/config/brand.js
 COPY package.json ./package.json
 USER node
 EXPOSE 3080

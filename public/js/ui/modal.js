@@ -5,6 +5,9 @@ import { glyph } from './icons.js';
 
 const stack = [];
 
+/** Optional listeners (set by the usage tracker): called when any dialog opens / closes. */
+export const modalHooks = { open: null, close: null };
+
 export class Modal {
   /**
    * @param {{title:string, width?:number, onClose?:Function, dismissable?:boolean, footer?:Node[], disposable?:boolean}} opts
@@ -44,6 +47,7 @@ export class Modal {
     this.opener = document.activeElement;
     show(this.backdrop, true);
     stack.push(this);
+    modalHooks.open?.(this);
     this.window.querySelector('button, input, select')?.focus?.({ preventScroll: true });
     return this;
   }
@@ -53,6 +57,7 @@ export class Modal {
     show(this.backdrop, false);
     const i = stack.indexOf(this);
     if (i >= 0) stack.splice(i, 1);
+    modalHooks.close?.(this);
     this.opener?.focus?.({ preventScroll: true });
     this.onClose?.();
     if (this.disposable) this.backdrop.remove();

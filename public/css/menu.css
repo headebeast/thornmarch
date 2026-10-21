@@ -191,6 +191,18 @@
 .conn.bad { color: #ff8a7a; }
 .empty { color: var(--text-mute); font-size: 13px; padding: 10px 0; }
 
+/* ---- usage-statistics question ----------------------------------------------------------------------------- */
+.consent { position: fixed; left: 50%; bottom: calc(14px + var(--safe-b, 0px)); transform: translateX(-50%); z-index: 70; width: min(640px, calc(100vw - 20px)); display: grid; grid-template-columns: 1fr auto; gap: 14px 18px; align-items: center; padding: 14px 16px; }
+.consent.hidden { display: none; }
+.consent h3 { font-family: var(--font-px); font-size: 20px; color: var(--gold-hi); margin: 0 0 4px; }
+.consent p { font-size: 13px; line-height: 1.45; color: var(--text-dim); margin: 0 0 6px; }
+.consent a { font-size: 12.5px; color: var(--gold-hi); }
+.consent-actions { display: flex; flex-direction: column; gap: 8px; min-width: 120px; }
+.consent-thanks { grid-column: 1 / -1; font-size: 13px; color: #9be59b; display: none; }
+.consent.is-answered .consent-body, .consent.is-answered .consent-actions { display: none; }
+.consent.is-answered .consent-thanks { display: block; }
+@media (max-width: 560px) { .consent { grid-template-columns: 1fr; } .consent-actions { flex-direction: row; } .consent-actions .btn { flex: 1; } }
+
 /* ---- codex ----------------------------------------------------------------------------------------------- */
 .codex-card { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 .codex-head { display: flex; gap: 12px; align-items: center; }

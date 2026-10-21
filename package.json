@@ -13,7 +13,7 @@
     "start:prod": "node scripts/build.mjs && STATIC_DIR=dist node server/server.mjs",
     "build": "node scripts/build.mjs",
     "check": "node scripts/check-release.mjs",
-    "verify": "node scripts/test-headless.mjs 14 && node scripts/test-server.mjs && node scripts/build.mjs && node scripts/check-release.mjs",
+    "verify": "node scripts/test-headless.mjs 14 && node scripts/test-server.mjs && node scripts/test-analytics.mjs && node scripts/build.mjs && node scripts/check-release.mjs",
     "test": "node scripts/test-headless.mjs 14",
     "test:server": "node scripts/test-server.mjs",
     "test:online": "node scripts/test-online-royale.mjs",
@@ -26,6 +26,10 @@
     "sim:royale": "node scripts/sim-royale.mjs 60",
     "tune:royale": "node scripts/tune-royale.mjs",
     "preview:royale": "node scripts/preview-royale.mjs ./.preview 60 demo",
-    "deploy:server": "flyctl deploy --build-arg SITE_URL=https://thornmarch.netlify.app --build-arg SOURCE_URL=https://github.com/headebeast/thornmarch --remote-only"
+    "deploy:server": "flyctl deploy --build-arg SITE_URL=https://thornmarch.netlify.app --build-arg SOURCE_URL=https://github.com/headebeast/thornmarch --remote-only",
+    "test:analytics": "node scripts/test-analytics.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.6"
   }
 }

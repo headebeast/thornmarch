@@ -164,6 +164,16 @@ try {
   r2.sock.destroy();
   await sleep(150);
 
+  console.log('\n== Connection probe');
+  const prober = (await openSocket(port)).client;
+  prober.send({ type: 'PING', id: 41 });
+  prober.send({ type: 'PING', id: 'x' });
+  await sleep(200);
+  const pongs = prober.messages.filter(m => m.type === 'PONG');
+  check(pongs.length === 2 && pongs[0].id === 41 && pongs[1].id === 0, 'PING is answered with PONG carrying the same id (garbage ids become 0)');
+  prober.sock.destroy();
+  await sleep(100);
+
   console.log('\n== Heartbeat');
   const quiet = (await openSocket(port)).client;
   await sleep(500);

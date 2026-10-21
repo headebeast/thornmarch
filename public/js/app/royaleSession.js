@@ -607,7 +607,8 @@ export class RoyaleSession {
   showEliminated() {
     return new Promise(resolve => {
       const e = this.game.royale.eliminated.find(x => x.team === this.team);
-      const m = (this.result = new Modal({ title: 'Warband eliminated', width: 460, dismissable: false, disposable: true }));
+      this.app.noteResult('lost', { rounds: this.round.round, place: this.placementOf() });
+    const m = (this.result = new Modal({ title: 'Warband eliminated', width: 460, dismissable: false, disposable: true }));
       m.body.append(
         h(
           'div',
@@ -649,6 +650,7 @@ export class RoyaleSession {
     const timed = g.royale.endedBy === 'time'; // nobody finished the hunt: the strongest warband was named
     const ranked = timed ? g.royale.standings.indexOf(this.team) + 1 : 0;
     const placement = won ? 1 : e?.placement ?? (ranked || g.activeTeams.length);
+    this.app.noteResult(won ? 'won' : 'lost', { rounds: this.round.round, place: placement });
     const m = (this.result = new Modal({ title: won ? 'Victory' : 'Battle over', width: 480, dismissable: false, disposable: true }));
     m.body.append(
       h(

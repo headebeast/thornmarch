@@ -13,6 +13,8 @@ export function readConfig(env = process.env) {
     port: num(env.PORT, 3080),
     host: env.HOST || '0.0.0.0',
     staticDir: env.STATIC_DIR || '',
+    // ANALYTICS_DIR=/some/folder turns the usage-statistics API on (see analytics/); ANALYTICS_TOKEN protects the dashboard
+    analyticsDir: env.ANALYTICS_DIR || '',
     // browsers sending an Origin header must be on this list (comma separated, e.g. https://play.example.com); the
     // server's own origin is always allowed. Leave empty to accept only same-origin browsers.
     allowedOrigins: String(env.ALLOWED_ORIGINS || '')

@@ -16,6 +16,7 @@ export class Lobby {
     this.onStartMatch = onStartMatch;
     this.copy = copy;
     this.modal = new Modal({ title: 'Online Battle', width: 900 });
+    this.modal.window.dataset.notrack = '1'; // room names, player names and chat live here: the usage statistics never look inside
     this.status = h('span', { class: 'conn' }, 'Connecting…');
     this.modal.headExtra.append(this.status);
 

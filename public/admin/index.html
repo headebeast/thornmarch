@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="color-scheme" content="dark" />
+  <title>Dashboard · Thornmarch</title>
+  <link rel="icon" href="/assets/icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/doc.css" />
+  <link rel="stylesheet" href="/admin/admin.css" />
+</head>
+<body>
+  <div id="gate" class="gate">
+    <form id="gate-form" class="card gate-card" autocomplete="off">
+      <div class="eyebrow">Thornmarch · players' dashboard</div>
+      <h1>Sign in</h1>
+      <p>Enter the dashboard key. It is kept only in this tab and sent only to this site.</p>
+      <input id="token" type="password" placeholder="Dashboard key" aria-label="Dashboard key" autocomplete="off" />
+      <button class="btn" type="submit">Open dashboard</button>
+      <div id="gate-msg" class="msg" role="alert"></div>
+    </form>
+  </div>
+
+  <main id="app" class="app hidden">
+    <header class="top">
+      <div>
+        <div class="eyebrow">Thornmarch · players' dashboard</div>
+        <h1>How people play</h1>
+      </div>
+      <div class="controls">
+        <div class="seg" id="range" role="group" aria-label="Time range"></div>
+        <button class="btn ghost" id="refresh">Refresh</button>
+        <button class="btn ghost" id="signout">Sign out</button>
+      </div>
+    </header>
+    <div id="status" class="status"></div>
+    <section id="kpis" class="kpis"></section>
+    <section class="grid">
+      <div class="card wide"><h2>Activity by day</h2><div class="legend" id="legend"></div><div id="chart"></div></div>
+      <div class="card"><h2>What people play</h2><div id="modes"></div></div>
+      <div class="card"><h2>Where time goes</h2><div id="screens"></div></div>
+      <div class="card"><h2>Most clicked</h2><div id="clicks"></div></div>
+      <div class="card"><h2>Countries</h2><div id="countries"></div></div>
+      <div class="card"><h2>Cities</h2><div id="cities"></div></div>
+      <div class="card"><h2>Devices</h2><div id="devices"></div><div id="os" class="sub"></div><div id="browsers" class="sub"></div></div>
+      <div class="card"><h2>Came from</h2><div id="referrers"></div><div id="languages" class="sub"></div></div>
+      <div class="card"><h2>Speed &amp; connection</h2><div id="perf"></div></div>
+      <div class="card"><h2>Scrolling &amp; zoom</h2><div id="scrolls"></div></div>
+      <div class="card wide"><h2>Crashes</h2><div id="errors"></div></div>
+      <div class="card wide"><h2>Latest sessions</h2><div class="scroll"><table id="recent"></table></div></div>
+    </section>
+    <p class="foot">Addresses are shown masked (last part removed) unless the server keeps full addresses. Sessions are deleted after 90 days. <a href="/privacy.html">Privacy notice</a></p>
+  </main>
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

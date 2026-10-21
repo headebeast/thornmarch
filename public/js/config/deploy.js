@@ -5,6 +5,7 @@
 //   <meta name="aeii-online" content="off">                        hide online play (e.g. on a purely static host)
 //   <meta name="aeii-source" content="https://github.com/you/repo"> where the game's source code can be found (GPL)
 //   <meta name="aeii-version" content="2.1.0">                     shown in the menu
+//   <meta name="aeii-analytics" content="/api">                    base address of the usage-statistics API ("" = no analytics, no banner)
 //
 // `window.AEII_SERVER` (set from a script) overrides the server tag, which is handy for local testing.
 
@@ -30,6 +31,9 @@ export const deploy = {
   },
   get sourceUrl() {
     return meta('aeii-source');
+  },
+  get analyticsUrl() {
+    return meta('aeii-analytics');
   },
   get version() {
     return meta('aeii-version') || 'dev';

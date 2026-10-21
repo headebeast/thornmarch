@@ -1,0 +1,34 @@
+/* Document pages (privacy notice, admin dashboard): the game's palette and pixel type, laid out as ordinary web pages. */
+@font-face { font-family: 'Jersey 15'; src: url('/assets/fonts/Jersey15.ttf') format('truetype'); font-display: swap; }
+
+:root {
+  --ink-0: #070a12; --ink-1: #0d1220; --ink-2: #141b2e; --line: #26324d;
+  --text: #e8ecf5; --text-dim: #aab3c8; --text-mute: #6f7b95;
+  --gold: #e9b949; --gold-hi: #ffd978; --sky: #58a6ff; --rose: #ff6f91; --mint: #5be3a4; --warn: #ff9a6a;
+  --px: 'Jersey 15', ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html { color-scheme: dark; }
+body { margin: 0; background: radial-gradient(1200px 600px at 50% -10%, #16213d 0%, var(--ink-0) 60%) fixed, var(--ink-0); color: var(--text); font: 15px/1.6 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+a { color: var(--gold-hi); }
+h1, h2, h3 { font-family: var(--px); font-weight: 400; letter-spacing: 0.02em; line-height: 1.1; margin: 0; }
+
+.doc { max-width: 760px; margin: 0 auto; padding: 56px 20px 80px; }
+.doc .eyebrow { font-family: var(--px); font-size: 14px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+.doc h1 { font-size: clamp(40px, 7vw, 60px); margin: 6px 0 14px; color: var(--gold-hi); text-shadow: 0 3px 0 #000; }
+.doc h2 { font-size: 28px; margin: 38px 0 10px; color: var(--text); padding-top: 22px; border-top: 2px solid var(--line); }
+.doc p, .doc li { color: var(--text-dim); }
+.doc ul { padding-left: 20px; }
+.doc li { margin: 5px 0; }
+.doc li b, .doc p b { color: var(--text); font-weight: 600; }
+.doc .lede { font-size: 17.5px; color: var(--text); }
+.doc .box { background: var(--ink-1); box-shadow: inset 0 0 0 2px var(--line); padding: 14px 18px; margin: 16px 0; clip-path: polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 6px), 0 calc(100% - 6px)); }
+.doc .box.good { box-shadow: inset 0 0 0 2px #2a6a4c; }
+.doc .box.no { box-shadow: inset 0 0 0 2px #6a3a3a; }
+.doc table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.doc th, .doc td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.doc th { color: var(--text-mute); font-weight: 500; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+.doc td:first-child { color: var(--text); white-space: nowrap; }
+.doc .back { display: inline-block; margin-bottom: 18px; font-family: var(--px); font-size: 18px; text-decoration: none; }
+.doc .stamp { color: var(--text-mute); font-size: 13px; margin-top: 40px; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: 0.9em; background: var(--ink-2); padding: 1px 6px; }

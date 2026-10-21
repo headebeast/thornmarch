@@ -10,6 +10,8 @@ dependencies, no database.
 |---|---|
 | Game (single-player, Battle Royale vs bots) | https://thornmarch.netlify.app — Netlify site `thornmarch` |
 | Source code | https://github.com/headebeast/thornmarch |
+| Players' dashboard | https://thornmarch.netlify.app/admin/ — sign in with the key (kept in `DASHBOARD-KEY.txt` next to this project, never in git) |
+| Privacy notice | https://thornmarch.netlify.app/privacy.html |
 | Online rooms | **not running yet** — they need the Node game server on a host that runs a program all day |
 
 **Turning on online play (about five minutes, needs a Fly.io account):**
@@ -146,6 +148,35 @@ graceful shutdown (players are told), and it keeps running if one room hits a bu
 - I have not load-tested thousands of simultaneous players; the limits above are conservative defaults, not measured capacity.
 - Chat is plain text, length-capped and rate-limited, but not moderated. If you open it to the public, consider a profanity filter or
   turning chat off.
+
+## 3b. What a multiplayer server needs
+
+Online play = one small Node program (`server/server.mjs`, no dependencies) that is **always running** and reachable over **HTTPS/WSS**.
+
+| Need | Why | Options |
+|---|---|---|
+| A host that runs a program 24/7 and allows WebSockets | rooms live in its memory | Fly.io, Render, Railway, a VPS (Hetzner ≈ €4/month, Oracle's always-free VM), or your own PC kept on |
+| HTTPS (`wss://`) | browsers block plain `ws://` from an https page | all of the above provide it (a VPS needs Caddy — one line, see §2) |
+| Node 18+ or Docker | the server | `Dockerfile` and `fly.toml` are included |
+| Nothing else | no database, no accounts, no game logic on the server (it only times rounds and relays orders) | — |
+
+Sizing: each player sends one tiny message per round, so a 256 MB machine is plenty for hundreds of players; it has not been load-tested. Netlify, GitHub Pages and Vercel **cannot** run it (they only serve files / short functions).
+
+## 3c. Usage statistics and the dashboard
+
+Players are asked once whether they agree to share anonymous usage statistics; nothing is recorded before "Allow" (see `public/privacy.html` — it is written to match the code exactly, so update it if you change what is collected).
+
+| Recorded (after consent) | Never recorded |
+|---|---|
+| screens + time on each · labelled buttons pressed · matches (mode, players, result, length) · active minutes · scroll/zoom counts · average FPS / ping / loss · crashes · device class, OS, browser, language, time zone, referrer · **IP address, masked** (`203.0.113.77` → `203.0.113.0`) + a salted hash · **city-level location** from the host's geo-IP | names, chat, room names, match contents, click coordinates, the raw user-agent, anything typed |
+
+- **Where it is stored:** Netlify Blobs on this deployment (`netlify/functions/*`), or a folder on disk on the Node server (`ANALYTICS_DIR`). One JSON file per play session, deleted after **90 days** (`ANALYTICS_RETENTION_DAYS`; a daily scheduled function does it).
+- **Read it:** `/admin/` — needs `ANALYTICS_TOKEN`. The deployed key is in `DASHBOARD-KEY.txt`. To change it: `netlify env:set ANALYTICS_TOKEN <new> --secret --context production` and redeploy.
+- **Keep whole IP addresses** instead of masked ones: `ANALYTICS_FULL_IP=1` (then update the privacy notice — it promises masking).
+- **Erase:** players press *Settings → Erase my data*; operators can't be asked to find one person, because no name is stored — the random visitor id is the handle.
+- **Turn it off for a deployment:** build without `ANALYTICS_URL` — no banner, no tracking code runs.
+- **On the Node server** (e.g. Fly): `ANALYTICS_DIR=/data ANALYTICS_TOKEN=… node server/server.mjs` (put `/data` on a volume). Location is only known if a proxy supplies it (Cloudflare's `CF-IPCountry`); a bare VPS records country-less sessions.
+- **Law, briefly:** collecting IP addresses and behaviour counts as personal data in the EU/UK and several other places. Consent-first, masking, 90-day deletion, an erase button and a plain notice are the usual safeguards, and are built in — but you are the operator: check the rules where your players live, and put a contact in the privacy notice if you collect from the EU.
 
 ## 4. Updating
 Build again and replace `dist/` (or redeploy the container). Players on the old version keep playing it; the new version downloads in

@@ -58,6 +58,7 @@ export class Hud {
       e.audioBtn,
       e.fsBtn,
       tool('codex', 'info', 'Codex'),
+      tool('settings', 'gear', 'Settings (FPS, connection, privacy)'),
       tool('menu', 'menu', 'Menu')
     );
     // tools wrapped spans must not break flex gap

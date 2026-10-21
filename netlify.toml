@@ -5,9 +5,18 @@
   command = "node scripts/build.mjs"
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 [build.environment]
   NODE_VERSION = "20"
   SITE_URL = "https://thornmarch.netlify.app"
   SOURCE_URL = "https://github.com/headebeast/thornmarch"
   ONLINE = "off"
   SERVER_URL = ""
+  ANALYTICS_URL = "/api"
+  # Secrets are NOT stored here. Set in Netlify (Site configuration → Environment variables) or with `netlify env:set`:
+  #   ANALYTICS_TOKEN  the dashboard key (required to read /admin)
+  #   ANALYTICS_SALT   any random text (scrambles stored address hashes)
+  #   ANALYTICS_FULL_IP=1  (optional) keep whole IP addresses instead of masked ones

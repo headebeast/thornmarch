@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { createStaticHandler, contentSecurityPolicy } from './staticFiles.mjs';
 import { readConfig, TokenBucket, IpCounter, clientIp, originAllowed } from './limits.mjs';
 import { brandTitle } from '../public/js/config/brand.js';
+import { createAnalyticsRoutes } from '../analytics/nodeRoutes.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CONFIG = readConfig(); // PORT, HOST, STATIC_DIR, ALLOWED_ORIGINS, TRUST_PROXY, MAX_* … (see DEPLOY.md)
@@ -279,6 +280,9 @@ function handleClientMessage(client, msg) {
         broadcastToRoom(room.code, { type: 'ROOM_UPDATED', room: publicRoom(room) });
       }
     }
+  } else if (msg.type === 'PING') {
+    // connection-quality probe from the client's overlay: answer at once, touch nothing else
+    sendWsJson(client.socket, { type: 'PONG', id: Number.isInteger(msg.id) ? msg.id : 0 });
   } else if (msg.type === 'LIST_ROOMS') {
     const list = Array.from(rooms.values()).map(r => ({
       code: r.code,
@@ -364,13 +368,15 @@ const serveStatic = createStaticHandler({
   log: (...a) => console.error('[static]', ...a)
 });
 const ipCounter = new IpCounter(CONFIG.maxPerIp);
+const analytics = CONFIG.analyticsDir ? createAnalyticsRoutes({ dir: path.resolve(CONFIG.analyticsDir), clientIp: req => clientIp(req, CONFIG.trustProxy) }) : null;
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   if (req.url === '/healthz' || req.url.startsWith('/healthz?')) {
     res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
     res.end(JSON.stringify({ ok: true, version: CONFIG.version, uptime: Math.round((Date.now() - startedAt) / 1000), clients: clients.size, rooms: rooms.size }));
     return;
   }
+  if (analytics && (await analytics(req, res))) return;
   if (CONFIG.cspReportOnly && req.method === 'POST' && req.url === '/csp-report') {
     let body = '';
     req.on('data', c => {
@@ -495,6 +501,7 @@ server.listen(PORT, CONFIG.host, () => {
   console.log(`  listening  http://${CONFIG.host === '0.0.0.0' ? 'localhost' : CONFIG.host}:${PORT}   (serving ${path.relative(process.cwd(), STATIC_DIR) || STATIC_DIR})`);
   console.log(`  limits     ${CONFIG.maxClients} clients, ${CONFIG.maxPerIp} per address, ${CONFIG.maxRooms} rooms · proxy ${CONFIG.trustProxy ? 'trusted' : 'not trusted'}`);
   if (CONFIG.allowedOrigins.length) console.log(`  origins    same-origin + ${CONFIG.allowedOrigins.join(', ')}`);
+  if (analytics) console.log(`  analytics  on → ${path.resolve(CONFIG.analyticsDir)} (dashboard ${analytics.api.config.token ? 'protected by ANALYTICS_TOKEN' : 'DISABLED: set ANALYTICS_TOKEN to read it'})`);
 });
 
 // A game server should survive a bug in one room: log it loudly and keep serving everyone else.
