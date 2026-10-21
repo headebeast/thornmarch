@@ -159,11 +159,14 @@ fs.writeFileSync(
   Cross-Origin-Opener-Policy: same-origin
 
 # code and data: always revalidate (the ETag makes that a cheap 304) so a deploy shows up immediately
+/
+  Cache-Control: no-cache
 /index.html
   Cache-Control: no-cache
 /sw.js
   Cache-Control: no-cache
 /manifest.webmanifest
+  Content-Type: application/manifest+json; charset=utf-8
   Cache-Control: no-cache
 /js/*
   Cache-Control: no-cache

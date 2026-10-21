@@ -4,6 +4,28 @@ The game is a folder of static files (the client) plus one small Node program (`
 **and** runs the online multiplayer rooms. Single-player modes need only the files. There is nothing to install — no npm
 dependencies, no database.
 
+## Live deployment
+
+| | |
+|---|---|
+| Game (single-player, Battle Royale vs bots) | https://thornmarch.netlify.app — Netlify site `thornmarch` |
+| Source code | https://github.com/headebeast/thornmarch |
+| Online rooms | **not running yet** — they need the Node game server on a host that runs a program all day |
+
+**Turning on online play (about five minutes, needs a Fly.io account):**
+
+```bash
+flyctl auth login            # opens a browser; Fly asks for a payment card on new accounts
+flyctl apps create thornmarch-game
+npm run deploy:server        # builds the Docker image remotely and deploys (fly.toml is ready; the machine sleeps when nobody is connected)
+```
+
+Then in `netlify.toml` set `ONLINE = "on"` and `SERVER_URL = "wss://thornmarch-game.fly.dev"`, and run
+`netlify deploy --prod --dir dist --site 2f3986dd-9f17-4d3f-9b1e-e0634e6c04ca` (or push to GitHub if the site is Git-connected).
+Check: `https://thornmarch-game.fly.dev/healthz` answers `{"ok":true,…}` and the menu shows **Online Battle**.
+
+Any other host works too — see section 2 above.
+
 ## 0. Before you publish — the checklist
 
 | | |

@@ -119,7 +119,7 @@ export class RoyaleSession {
     const sq = this.squad();
     if (this.round.round === 1) {
       const gold = this.game.players[this.team].gold;
-      this.app.hud.toast(`${gold} gold: to spend — press Recruit… at your War Camp, or march on the Gold Mine nearby`, 'good');
+      this.app.hud.toast(`You have ${gold} gold — press Recruit… at your War Camp, or march on the Gold Mine nearby`, 'good');
     }
     else if (this.game.hunt.horn) this.app.hud.toast(this.game.hunt.final ? 'Final hunt — every warband is marked' : 'War horn! Every warband is marked on the map', 'good');
     else this.app.hud.toast(`Round ${this.round.round} — plan your moves`);

@@ -13,6 +13,7 @@ primary_region = "ams"
   HOST = "0.0.0.0"
   STATIC_DIR = "/app/dist"
   TRUST_PROXY = "1"
+  ALLOWED_ORIGINS = "https://thornmarch.netlify.app"
 
 [http_service]
   internal_port = 3080
