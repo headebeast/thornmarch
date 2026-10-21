@@ -1,9 +1,13 @@
-# Static hosting on Netlify: single-player modes work as-is; for online play host the Node server elsewhere and set SERVER_URL.
-#   Build settings → Build command: npm run build   Publish directory: dist
-# Environment variables (Site settings → Environment): SITE_URL, SOURCE_URL, SERVER_URL (optional), ONLINE=off (if no server)
+# Static hosting on Netlify: every single-player mode works as-is (Battle Royale vs bots, Frontier, Skirmish, Campaign, editor).
+# Online rooms need the Node game server (see DEPLOY.md) — until one is running, online play is switched off here.
+#   When it is up: set SERVER_URL below to its wss:// address, change ONLINE to "on", and redeploy.
 [build]
   command = "node scripts/build.mjs"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "20"
+  SITE_URL = "https://thornmarch.netlify.app"
+  SOURCE_URL = "https://github.com/headebeast/thornmarch"
+  ONLINE = "off"
+  SERVER_URL = ""
