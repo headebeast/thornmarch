@@ -1,7 +1,9 @@
 // Pre-publish checks — the things unit tests do not touch:
 //   · every JS file parses, every import points at a file that exists and exports what is imported (UI code included)
 //   · every /assets/… and /data/… path the code, CSS and HTML mention exists
-//   · all JSON is valid, the manifest's icons exist, licence/credit files are present
+//   · all JSON is valid, licence/credit files are present
+//   · the web-app manifest is installable (icons really are the size they claim, maskable icon has its safe zone) and the
+//     service worker is sound: pre-cache lists only real files, never takes over by itself, speaks the page's message names
 //   · (after `npm run build`) the offline snapshot lists only files that exist and the build is stamped
 //   --strict also turns the publishing reminders (source link, site URL, trademark) into failures
 //
@@ -11,6 +13,7 @@ import fs from 'fs';
 import path from 'path';
 import { spawnSync } from 'child_process';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { checkManifest } from './lib/manifestCheck.mjs';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = path.join(ROOT, 'public');
@@ -51,7 +54,7 @@ const rel = f => path.relative(ROOT, f).replace(/\\/g, '/');
 
 // ---- JS modules ------------------------------------------------------------------------------------------------------
 section('JavaScript modules');
-const jsFiles = [...walk(path.join(PUBLIC, 'js'), f => f.endsWith('.js')), ...['analytics', 'server', 'netlify'].flatMap(d => walk(path.join(ROOT, d), f => f.endsWith('.mjs')))];
+const jsFiles = [...walk(path.join(PUBLIC, 'js'), f => f.endsWith('.js')), ...walk(path.join(ROOT, 'pwa'), f => f.endsWith('.js')), ...['analytics', 'server', 'netlify'].flatMap(d => walk(path.join(ROOT, d), f => f.endsWith('.mjs')))];
 const exportsOf = new Map();
 function collectExports(file, seen = new Set()) {
   if (exportsOf.has(file)) return exportsOf.get(file);
@@ -132,6 +135,13 @@ warn(BRAND.name !== 'Ancient Empires', `the game is still called "${BRAND.name}"
 warn(!!process.env.SOURCE_URL, 'SOURCE_URL is not set — the GPL asks that players can find the source code (shown in the About box)');
 warn(!!process.env.SITE_URL, 'SITE_URL is not set — link previews need an absolute address (og:image, canonical)');
 
+// ---- installable app -----------------------------------------------------------------------------------------------------
+section('Installable app (PWA)');
+const manifestProblems = checkManifest(JSON.parse(read(path.join(PUBLIC, 'manifest.webmanifest'))), PUBLIC);
+ok(manifestProblems.length === 0, 'public/manifest.webmanifest is installable and its icons are right', manifestProblems.join('\n      '));
+for (const [needle, what] of [['rel="manifest"', 'links the manifest'], ['name="theme-color"', 'sets the theme colour'], ['rel="apple-touch-icon"', 'has an iPhone home-screen icon'], ['name="viewport"', 'has a viewport'], ['apple-mobile-web-app-title', 'names the iPhone home-screen icon'], ['/css/pwa.css', 'loads the update-banner styles']]) ok(html.includes(needle), `index.html ${what}`);
+for (const f of ['pwa/sw/00-config.js', 'pwa/sw/01-lifecycle.js', 'pwa/sw/04-fetch.js', 'public/js/pwa/protocol.js', 'public/js/pwa/updateManager.js', 'public/js/pwa/updateController.js', 'public/js/pwa/snooze.js', 'public/js/ui/updateBanner.js', 'public/js/ui/updateConfirm.js']) ok(fs.existsSync(path.join(ROOT, f)), `${f} is present`);
+
 // ---- the built folder --------------------------------------------------------------------------------------------------
 section('Build output (dist/)');
 if (!fs.existsSync(DIST)) console.log('  (no dist/ yet — run `npm run build`)');
@@ -146,6 +156,20 @@ else {
   ok(version && version !== 'dev' && sw.includes(version.split('+')[1]), `dist/index.html is stamped (${version}) and matches the service worker`);
   ok(fs.existsSync(path.join(DIST, '_headers')) && fs.existsSync(path.join(DIST, 'robots.txt')), 'dist/ has _headers and robots.txt');
   ok(!/(?:src|href)="\/js\/legacy\.js"/.test(built), 'dist/index.html has no stale script references');
+  const distManifest = JSON.parse(read(path.join(DIST, 'manifest.webmanifest')));
+  const distProblems = checkManifest(distManifest, DIST);
+  ok(distProblems.length === 0, 'dist/manifest.webmanifest is installable and its icons are right', distProblems.join('\n      '));
+  const offlineIcons = [...distManifest.icons.map(i => i.src), ...(distManifest.shortcuts || []).flatMap(s => (s.icons || []).map(i => i.src))];
+  ok(offlineIcons.every(src => list.includes(src)), 'every manifest icon is in the offline snapshot', offlineIcons.filter(src => !list.includes(src)).join(', '));
+  ok(list.includes('/') && list.includes('/js/main.js') && list.includes('/css/pwa.css') && list.includes('/manifest.webmanifest'), 'the offline snapshot holds the start page, the game script, the update styles and the manifest');
+  const syntax = spawnSync(process.execPath, ['--check', path.join(DIST, 'sw.js')], { encoding: 'utf8' });
+  ok(syntax.status === 0, 'dist/sw.js parses', syntax.stderr);
+  const { SW_MESSAGE } = await import(pathToFileURL(path.join(PUBLIC, 'js/pwa/protocol.js')).href);
+  ok(sw.includes(JSON.stringify(SW_MESSAGE)), 'the service worker speaks the same message names as the page');
+  const code = sw.replace(/^\s*\/\/.*$/gm, '').replace(/\s\/\/ .*$/gm, ''); // comments may talk about skipWaiting; only calls count
+  const takeovers = [...code.matchAll(/self\.skipWaiting\(\)/g)].map(m => m.index);
+  ok(takeovers.length === 1 && takeovers[0] > code.indexOf("addEventListener('message'"), 'the service worker takes over ONLY when asked (skipWaiting appears once, inside the message handler)');
+  ok(!/__AEII_/.test(sw.replace(/\/\/[^\n]*/g, '')), 'no unfilled placeholder is left in the service worker');
   const analyticsMeta = /name="aeii-analytics" content="([^"]*)"/.exec(built)?.[1];
   if (analyticsMeta) ok(sw.includes("startsWith('/api/')") && !list.some(u => u.startsWith('/admin')), 'statistics are on: the service worker leaves /api/ and /admin/ alone and does not pre-cache the dashboard');
 }

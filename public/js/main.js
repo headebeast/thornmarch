@@ -1,12 +1,17 @@
 // Entry point. Everything interesting lives in app/App.js (composition root) and the platform-agnostic core.
 
 import { App } from './app/App.js';
-import { deploy } from './config/deploy.js';
+import { createPwa } from './pwa/pwa.js';
 
 let app = null;
 
+// The installable-app layer (service worker, update checks) starts BEFORE the game: if a release ever fails to start, a fixed
+// release can still be found and switched to, instead of the player being stuck on a broken cached copy.
+const pwa = createPwa();
+pwa.start();
+
 window.addEventListener('DOMContentLoaded', () => {
-  app = new App();
+  app = new App({ pwa });
   window.__aeii = app; // handy for debugging & automated tests
   app
     .start()
@@ -19,6 +24,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const text = `Failed to start: ${err?.message || err}`;
       if (window.__aeiiBootFailed) window.__aeiiBootFailed(text);
       else document.getElementById('loading-status')?.append(text);
+      pwa.recoverFromBootFailure().catch(() => {}); // a newer build may already fix it: nothing is running, so nothing can be lost
     });
 });
 
@@ -33,23 +39,3 @@ const report = (what, err) => {
 };
 window.addEventListener('error', e => report('Uncaught error:', e.error || e.message));
 window.addEventListener('unhandledrejection', e => report('Unhandled rejection:', e.reason));
-
-// Offline / installable — only for a built release (`npm run build` stamps a version; the unbuilt dev page says "dev"), so
-// development never meets a stale cache. A new release installs in the background; at the menu it takes over with a quick
-// reload, mid-match it waits so nobody loses a game.
-if ('serviceWorker' in navigator && window.isSecureContext && deploy.version !== 'dev') {
-  navigator.serviceWorker
-    .register('/sw.js')
-    .then(reg => {
-      reg.addEventListener('updatefound', () => {
-        const worker = reg.installing;
-        worker?.addEventListener('statechange', () => {
-          if (worker.state !== 'installed' || !navigator.serviceWorker.controller) return;
-          if (app?.match) return app.hud?.toast('A new version is ready — it loads when you are back at the menu.', 'good');
-          navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true });
-          worker.postMessage('skipWaiting');
-        });
-      });
-    })
-    .catch(() => {});
-}

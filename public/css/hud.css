@@ -476,10 +476,15 @@
   .hud-tools { gap: 2px; padding: 3px; }
 }
 @media (max-width: 640px) {
+  /* a portrait phone: seven cells cannot share one line, so they wrap — round · timer · alive · kills / gold · squad · horn */
   .royale-bar .res.kills { display: flex; }
-  .royale-bar { order: 3; width: 100%; justify-content: space-between; }
-  .royale-bar .res { flex: 1; justify-content: center; padding: 3px 4px; }
-  .kill-feed { top: calc(150px + var(--safe-t)); }
+  .royale-bar { order: 3; width: 100%; flex-wrap: wrap; justify-content: stretch; }
+  .royale-bar .res { flex: 1 1 22%; min-width: 0; justify-content: center; padding: 3px 4px; }
+  .royale-bar .res::before { display: none; }
+  .royale-bar .res.hunt { flex: 2 1 40%; }
+  .royale-bar .res .val, .royale-bar .res.round .val, .royale-bar .res.gold .val, .royale-bar .res.squadcell .val, .royale-bar .res.timer .val { font-size: 17px; min-width: 0; white-space: nowrap; }
+  .royale-bar .res.hunt .val { font-size: 13px; }
+  .kill-feed { top: calc(196px + var(--safe-t)); }
 }
 
 /* ---- FPS / connection read-out (Settings → On screen) -------------------------------------------------- */

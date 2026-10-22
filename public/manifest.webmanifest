@@ -1,8 +1,11 @@
 {
+  "id": "/",
   "name": "Thornmarch Tactics",
   "short_name": "Thornmarch",
-  "description": "Classic turn-based tactics rebuilt for every screen — with the new Frontier mode.",
-  "start_url": "/",
+  "description": "Classic turn-based tactics, rebuilt for every screen — campaign, skirmish, the Frontier realm and a 60-warband Battle Royale.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "fullscreen",
   "display_override": ["fullscreen", "standalone"],
@@ -10,10 +13,26 @@
   "background_color": "#070a12",
   "theme_color": "#070a12",
   "categories": ["games"],
+  "prefers_related_applications": false,
+  "launch_handler": { "client_mode": "focus-existing" },
   "icons": [
+    { "src": "/assets/icons/icon-96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
     { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icons/icon-256.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
     { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "/assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "/assets/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "screenshots": [
+    { "src": "/assets/screenshots/menu-wide.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Campaign, Skirmish, the Frontier realm and Battle Royale from one menu" },
+    { "src": "/assets/screenshots/royale-wide.png", "sizes": "1280x720", "type": "image/png", "form_factor": "wide", "label": "Battle Royale: plan your warband's moves, claim camps and mines, recruit with gold" }
+  ],
+  "shortcuts": [
+    { "name": "Battle Royale", "short_name": "Royale", "description": "20–60 warbands, last one standing", "url": "/?play=royale&source=shortcut", "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Frontier", "short_name": "Frontier", "description": "A vast realm to farm, scout and conquer", "url": "/?play=frontier&source=shortcut", "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }] },
+    { "name": "Skirmish", "short_name": "Skirmish", "description": "Classic maps against the AI", "url": "/?play=skirmish&source=shortcut", "icons": [{ "src": "/assets/icons/icon-96.png", "sizes": "96x96", "type": "image/png" }] }
   ]
 }

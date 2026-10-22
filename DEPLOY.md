@@ -178,10 +178,37 @@ Players are asked once whether they agree to share anonymous usage statistics; n
 - **On the Node server** (e.g. Fly): `ANALYTICS_DIR=/data ANALYTICS_TOKEN=… node server/server.mjs` (put `/data` on a volume). Location is only known if a proxy supplies it (Cloudflare's `CF-IPCountry`); a bare VPS records country-less sessions.
 - **Law, briefly:** collecting IP addresses and behaviour counts as personal data in the EU/UK and several other places. Consent-first, masking, 90-day deletion, an erase button and a plain notice are the usual safeguards, and are built in — but you are the operator: check the rules where your players live, and put a contact in the privacy notice if you collect from the EU.
 
-## 4. Updating
-Build again and replace `dist/` (or redeploy the container). Players on the old version keep playing it; the new version downloads in
-the background and takes over at the main menu with a quick reload (never mid-match). Pages and code are always revalidated, so a
-deploy shows up on the next visit.
+## 4. Updating — players never reinstall anything
+
+Deploy as usual (`npm run build` and upload `dist/`, or `netlify deploy --prod`). What happens on the players' side:
+
+1. **Detection.** An open game asks the server for a new build every 15 minutes, whenever the window comes back to the front, and when
+   the network returns; a game that was closed finds it on the next start. An installed app on a phone or desktop updates exactly
+   the same way — no store, no reinstall.
+2. **Download.** The new build downloads into the background (≈ 1.3 MB; music is not re-downloaded for code-only releases). It does
+   **not** take over by itself — nothing ever reloads under a player.
+3. **Banner.** A small card appears under the top bar: *Update available · v… is ready*, with the optional release note, **Update** and
+   **Later**.
+4. **Update** opens a confirmation (**Cancel** / **Update and reload**). If the player is in a match or the map editor, the dialog says
+   so in red (matches are not saved; the editor keeps a map only after *Save*), and Cancel has the focus. Esc, the ✕ and clicking
+   outside all mean Cancel.
+5. **Later** offers *30 minutes*, *1 hour* or *Next time I open the game*. The banner comes back by itself when the time is up (also
+   after the window was asleep). "Next time" means the next window / tab / app launch — a plain reload does not count. A newer build
+   is never hidden by an old snooze.
+6. **Settings → App & updates** always shows the running version, *Check for updates*, *Update now…* and (when snoozed) *Remind me
+   now*, plus install status and offline readiness.
+7. Several windows open? The one that updated reloads; the others show *Updated in another window — Reload* instead of reloading
+   themselves.
+
+**Add a note to the banner:** `RELEASE_NOTE="Camps, gold and a smarter update system" npm run build` (one line, ≤ 140 characters;
+for Netlify put it in the `[build.environment]` of `netlify.toml` for that release).
+
+**If a release is broken:** deploy the fix. A game that fails to start looks for a newer build by itself and switches to it
+automatically (nothing is running, so nothing can be lost). A game that starts but misbehaves will show the banner like any update.
+
+**Rules this relies on** (the build and `npm run check` enforce them): `sw.js`, `index.html` and the manifest are served with
+`Cache-Control: no-cache`; the service worker file name never changes (`/sw.js`); every build changes the worker's bytes (its cache
+name is a hash of the shipped files), which is what makes browsers notice it.
 
 ## 5. Troubleshooting
 | Symptom | Likely cause |
@@ -190,4 +217,6 @@ deploy shows up on the next visit.
 | "Disconnected — the multiplayer server is unreachable" | The page cannot reach `/ws`: proxy missing the WebSocket upgrade headers, `SERVER_URL` wrong, or the page's origin is not in `ALLOWED_ORIGINS`. |
 | Everyone gets "Too many requests" | Behind a proxy without `TRUST_PROXY=1` — all players look like one address. |
 | Old version keeps showing | A CDN is caching `index.html` or `sw.js`: they must be served `Cache-Control: no-cache` (the provided `_headers` does this). |
+| No update banner after a deploy | The player has a build from before the update banner existed — it updates itself once at the menu; or `sw.js` is cached by a CDN (see above). Settings → *Check for updates* forces a look. |
+| "Install app" never appears | Chrome/Edge offer it only on HTTPS (or localhost) with a valid manifest — run `npm run check`. Safari has no install button: the game shows the *Share → Add to Home Screen* steps instead. |
 | Music silent on the first tap | Browsers block audio until the first click/tap; it starts then. |

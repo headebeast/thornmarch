@@ -32,10 +32,13 @@ public/js/
 
   ── SHELL (browser specifics, swappable) ──
   config/     brand.js (the game's name — rename here) · deploy.js (server URL, online on/off, source link, from <meta> tags)
-  platform/   platform.js   fullscreen, storage, haptics, wake-lock, `window.aeiiHost` bridge
+  platform/   platform.js   fullscreen, storage, haptics, wake-lock, `window.aeiiHost` bridge · perfMonitor.js (FPS)
+  pwa/        the installable-app layer, no DOM except where noted: protocol.js (page ↔ worker words, shared with the build) ·
+              config.js (every timing and snooze choice) · updateManager.js (talks to the service worker) · snooze.js ·
+              updateController.js (banner rules, reminder timer, "ask first") · installManager.js · pwa.js (wiring)
   renderer/   camera.js · canvasRenderer.js · minimap.js
   input/      pointerController.js   mouse + touch + pen through Pointer Events
-  ui/         hud, menus, setup, shop, codex, lobby (safe DOM, no innerHTML)
+  ui/         hud, menus, setup, shop, codex, lobby (safe DOM, no innerHTML) · updateBanner.js · updateConfirm.js · installControl.js · pwaSettings.js
   network/    multiplayerClient.js
   data/       assetLoader.js   (ContentDatabase + images)
   app/App.js  composition root
@@ -165,6 +168,18 @@ Menu → **Settings** (or the gear in the in-game bar): *Show FPS counter* (fram
 top bar (`ui/perfOverlay.js`, `platform/perfMonitor.js`, `network/netStats.js`). The same menu holds the privacy choices. Consent-based anonymous usage
 statistics (`analytics/`, `public/js/analytics/`, `netlify/functions/`) feed the password-protected dashboard at `/admin/`; see DEPLOY.md §3c.
 
+### Installable app, offline play and updates
+`manifest.webmanifest` (installable, shortcuts to the three modes, store screenshots, a real maskable icon) · a generated
+**service worker** (`pwa/sw/*.js`, assembled by `scripts/build.mjs`) that downloads the whole game at install, opens offline, saves
+music the first time it plays and **never takes over by itself** · an in-app update system:
+
+> new build found → banner (**Update** / **Later**) → *Update* asks **Cancel / Update and reload** (warns if a match or the editor is open) →
+> *Later* offers 30 minutes · 1 hour · next time I open the game → Settings → *App & updates* shows version, check and install.
+
+Every part is its own small file: change a timing in `public/js/pwa/config.js`, the wording in `ui/updateBanner.js` /
+`ui/updateConfirm.js`, the cache strategy in `pwa/sw/04-fetch.js`, the look in `css/pwa.css`. `?muted=1` on the address starts the
+game silent (tests, recordings). `npm run test:pwa` exercises all of it — including the real generated worker — without a browser.
+
 ### Tests & tools
 | Command | What it checks |
 |---|---|
@@ -172,6 +187,7 @@ statistics (`analytics/`, `public/js/analytics/`, `netlify/functions/`) feed the
 | `node scripts/test-online-royale.mjs` | the referee protocol against a running server (join, rounds, drop → bot, desync, order sanitising) |
 | `npm run test:server` | server hardening: CSP/headers, gzip/brotli/304/ranges, hostile URLs, origin checks, per-address and flood limits, oversized frames, heartbeat (spawns its own server) |
 | `npm run test:analytics` | usage statistics: validation, privacy rules (IP masking, no names/chat), aggregation, token auth, erase, retention, abuse limits, file store, real HTTP routes |
+| `npm run test:pwa` | update system (snooze, manager, controller), install handling, and the real generated service worker: install/activate/fetch/music ranges/offline, "never takes over by itself" |
 | `npm run check` | pre-publish checks: every import resolves and exports what is imported, every asset path exists, JSON/manifest/licence files, build output |
 | `npm run build` | `dist/`: branded index.html + manifest, versioned offline service worker, `_headers`, robots/sitemap, size report |
 | `node scripts/audit-movement.mjs` | unit × terrain movement table |

@@ -5,6 +5,7 @@ import { Modal } from './modal.js';
 import { settings } from '../config/settings.js';
 import { deploy } from '../config/deploy.js';
 import { consent } from '../analytics/consent.js';
+import { buildPwaSettings } from './pwaSettings.js';
 
 /** A labelled on/off switch in the game's own style. `onChange(next)` returns void; the row repaints itself. */
 function toggleRow({ label, note, get, onChange }) {
@@ -25,11 +26,16 @@ function toggleRow({ label, note, get, onChange }) {
 }
 
 export class SettingsBox {
-  /** @param {{onErase?: () => Promise<boolean>}} o */
-  constructor({ onErase = null } = {}) {
+  /** @param {{onErase?: () => Promise<boolean>, pwa?: object, notify?: (text: string) => void}} o */
+  constructor({ onErase = null, pwa = null, notify = () => {} } = {}) {
     this.modal = new Modal({ title: 'Settings', width: 520 });
     this.rows = [];
     const section = (title, ...kids) => h('div', { style: { marginBottom: '16px' } }, h('div', { class: 'eyebrow', style: { marginBottom: '8px' } }, title), ...kids);
+
+    if (pwa) {
+      this.pwaPanel = buildPwaSettings({ pwa, notify });
+      this.modal.body.append(section('App & updates', this.pwaPanel.node));
+    }
 
     const fps = toggleRow({ label: 'Show FPS counter', note: 'Frames per second, frame time and the slowest recent frame, in the corner of the screen.', get: () => settings.get('showFps'), onChange: v => settings.set('showFps', v) });
     const net = toggleRow({ label: 'Show connection quality', note: 'Ping, jitter and packet loss while you are in an online room. (Browsers hide raw packet loss, so loss is counted as probe replies that never came back.)', get: () => settings.get('showNet'), onChange: v => settings.set('showNet', v) });
@@ -72,6 +78,7 @@ export class SettingsBox {
 
   open() {
     this.rows.forEach(r => r.paint());
+    this.pwaPanel?.refresh();
     if (this.signal) this.signal.style.display = consent.blockedBySignal ? '' : 'none';
     if (this.status) clear(this.status);
     this.modal.open();

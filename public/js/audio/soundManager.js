@@ -3,7 +3,8 @@
 
 export class SoundManager {
   constructor() {
-    this.muted = false;
+    // ?muted=1 in the address starts the game silent (automated tests, screen recordings); the player can still unmute
+    this.muted = typeof location !== 'undefined' && new URLSearchParams(location.search).get('muted') === '1';
     this.musicVolume = 0.45;
     this.sfxVolume = 0.7;
     this.currentMusic = null;

@@ -33,6 +33,10 @@ import { glyph } from '../ui/icons.js';
 import { deploy } from '../config/deploy.js';
 import { AboutBox } from '../ui/about.js';
 import { SettingsBox } from '../ui/settings.js';
+import { UpdateBanner } from '../ui/updateBanner.js';
+import { UpdateConfirm } from '../ui/updateConfirm.js';
+import { createInstallButton } from '../ui/installControl.js';
+import { createPwa } from '../pwa/pwa.js';
 import { PerfOverlay } from '../ui/perfOverlay.js';
 import { PerfMonitor } from '../platform/perfMonitor.js';
 import { settings } from '../config/settings.js';
@@ -53,7 +57,10 @@ const ACTION_INFO = {
 };
 
 export class App {
-  constructor() {
+  /** @param {{pwa?: ReturnType<typeof createPwa>}} o  main.js starts the PWA layer before the game; without it the app makes (and starts) its own */
+  constructor({ pwa = null } = {}) {
+    this.ownsPwa = !pwa;
+    this.pwa = pwa || createPwa();
     this.assets = new AssetLoader();
     this.sound = new SoundManager();
     this.canvas = document.getElementById('game-canvas');
@@ -111,6 +118,7 @@ export class App {
       }
     }
 
+    if (this.ownsPwa) this.pwa.start();
     this.buildUi();
     this.bindInput();
     this.bindWindow();
@@ -120,6 +128,10 @@ export class App {
     document.getElementById('loading-overlay').classList.add('hidden');
     this.running = true;
     requestAnimationFrame(t => this.frame(t));
+
+    // home-screen shortcuts open straight at a mode's setup: /?play=royale
+    const play = new URLSearchParams(location.search).get('play');
+    if (['royale', 'frontier', 'skirmish'].includes(play)) this.openSetup(play);
 
     const room = new URLSearchParams(location.search).get('room');
     if (room && deploy.online) {
@@ -135,7 +147,8 @@ export class App {
     // an always-ready realm for the animated menu backdrop and the featured card
     const fr = getMode('frontier');
     const backdropMap = generateFrontierMap({ size: 48, players: 2, seed: 'WELCOME', theme: 'meadow' }, a, a.autotile);
-    this.menu = new MainMenu({ assets: a, platform, backdropMap, onChoose: id => this.onMenu(id) });
+    this.installButton = createInstallButton({ install: this.pwa.install, notify: text => this.hud.toast(text, 'good') });
+    this.menu = new MainMenu({ assets: a, platform, backdropMap, extraFoot: [this.installButton.node], onChoose: id => this.onMenu(id) });
     this.menu.mount();
     this.backdrop = createBackdrop(this.menu.canvas, a, backdropMap);
 
@@ -170,7 +183,11 @@ export class App {
       onStartMatch: () => this.net.startMatch()
     });
 
-    this.settingsBox = new SettingsBox({ onErase: () => this.tracker.forget() });
+    this.settingsBox = new SettingsBox({ onErase: () => this.tracker.forget(), pwa: this.pwa, notify: text => this.hud.toast(text, 'good') });
+    // the update announcement: the controller decides WHEN, these draw it and ask before anything reloads
+    this.updateConfirm = new UpdateConfirm();
+    this.pwa.updates.attach({ confirm: view => this.updateConfirm.ask(view), context: () => this.busyContext() });
+    this.updateBanner = new UpdateBanner({ controller: this.pwa.updates, anchor: () => this.hud.el.top, notify: text => this.hud.toast(text, 'good') });
     this.perfOverlay = new PerfOverlay({ perf: this.perf, getNet: () => this.net.stats, isOnline: () => this.net.connected, anchor: () => this.hud.el.top });
     const applySettings = () => this.perfOverlay.configure({ showFps: settings.get('showFps'), showNet: settings.get('showNet') });
     settings.subscribe(applySettings);
@@ -293,6 +310,17 @@ export class App {
       )
     );
     m.open();
+  }
+
+  /**
+   * What would be lost if the page reloaded right now — the update confirmation names it. Nothing is autosaved: a match in
+   * progress is gone after a reload, and the map editor keeps a map only once Save has been pressed.
+   */
+  busyContext() {
+    if (this.editor.active) return { busy: true, kind: 'editor', text: 'The map editor is open. A map is only kept once you press Save, so anything unsaved would be lost.' };
+    const over = this.game.phase === 'GAME_OVER' || this.royale?.state === 'OVER';
+    if (this.match && !over) return { busy: true, kind: 'match', text: `You are in the middle of “${this.match.title}”. Matches are not saved, so this one would be lost.` };
+    return { busy: false };
   }
 
   /** How the running match ended — reported to the usage statistics when the player leaves it. */

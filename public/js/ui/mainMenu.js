@@ -7,7 +7,9 @@ import { BRAND } from '../config/brand.js';
 import { deploy } from '../config/deploy.js';
 
 export class MainMenu {
-  constructor({ assets, platform, onChoose, backdropMap }) {
+  /** `extraFoot`: more small buttons for the footer (e.g. "Install app"), built by the caller. */
+  constructor({ assets, platform, onChoose, backdropMap, extraFoot = [] }) {
+    this.extraFoot = extraFoot;
     this.assets = assets;
     this.platform = platform;
     this.onChoose = onChoose;
@@ -50,7 +52,7 @@ export class MainMenu {
       { class: 'menu-col' },
       h('div', { class: 'logo' }, h('div', { class: 'crest' }, glyph('flag', 3), glyph('trophy', 3), glyph('flag', 3)), h('h1', null, BRAND.name, h('span', null, BRAND.edition.toUpperCase())), h('p', null, 'The classic turn-based war, rebuilt for every screen.')),
       h('div', { class: 'menu-list' }, featured, this.item('campaign', 'sword', 'Campaign', '27 story stages from the original games'), this.item('skirmish', 'crystal', 'Skirmish', '26 classic maps · vs AI or pass-and-play'), this.royaleItem(), ...(deploy.online ? [this.item('online', 'globe', 'Online Battle', 'Live rooms, room codes and chat')] : []), this.item('editor', 'hammer', 'Map Editor', 'Paint terrain, place armies, share maps'), this.item('codex', 'book', 'Codex', 'Every unit, ability and building')),
-      h('div', { class: 'menu-foot' }, this.fsBtn, this.audioBtn, h('button', { class: 'btn btn-sm', onclick: () => this.onChoose('settings') }, glyph('gear', 2), 'Settings'), h('button', { class: 'btn btn-sm', onclick: () => this.onChoose('about') }, 'About'), h('span', { class: 'grow' }), h('span', null, `v${deploy.version.split("+")[0]} · works on desktop, tablet & phone`))
+      h('div', { class: 'menu-foot' }, this.fsBtn, this.audioBtn, h('button', { class: 'btn btn-sm', onclick: () => this.onChoose('settings') }, glyph('gear', 2), 'Settings'), ...this.extraFoot, h('button', { class: 'btn btn-sm', onclick: () => this.onChoose('about') }, 'About'), h('span', { class: 'grow' }), h('span', null, `v${deploy.version.split("+")[0]} · works on desktop, tablet & phone`))
     );
     return h('div', { id: 'menu-screen', class: 'hidden' }, this.canvas, col);
   }
